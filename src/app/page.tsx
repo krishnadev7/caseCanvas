@@ -17,7 +17,7 @@ export default function Home() {
                           items-center lg:items-start">
               <div className="absolute w-28 left-0 top-20 hidden lg:block">
                 <div className='absolute inset-x-0 bottom-0 bg-gradient-to-t via-slate-50/50 from-slate-50 h-28'>
-                  <img src="panther2.png" alt="" className="w-full" />
+                  <img src="panther-2.png" alt="" className="w-full" />
                 </div>
               </div>
 
