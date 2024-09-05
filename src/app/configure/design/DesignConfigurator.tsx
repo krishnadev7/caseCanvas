@@ -5,10 +5,10 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label"
 import { cn, formatPrice } from "@/lib/utils";
-import Image from "next/image";
+import NextImage from "next/image";
 import { Rnd } from 'react-rnd'
 import { Description, Radio, RadioGroup } from '@headlessui/react'
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { COLORS, FINISHES, MATERIALS, MODELS } from "@/validators/option-validator";
 import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuContent } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
@@ -34,26 +34,106 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
         finish: FINISHES.options[0]
     })
 
+    const [renderedDimensions, setRenderedDimensions] = useState({
+        width: imageDimensions.width / 4,
+        height: imageDimensions.height / 4
+    })
+
+    const [renderedPosition, setRenderedPosition] = useState({
+        x: 310,
+        y: 250
+    })
+
+    const phoneCaseRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    async function saveConfiguration() {
+        try {
+            const { left: caseLeft, top: caseTop, width, height } = phoneCaseRef.current!.getBoundingClientRect();
+
+            const { left: containerLeft, top: containerTop } = containerRef.current!.getBoundingClientRect();
+
+            const leftOffset = caseLeft - containerLeft;
+            const topOffset = caseTop - containerTop;
+
+            const actualX = renderedPosition.x - leftOffset;
+            const actualY = renderedPosition.y - topOffset;
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+
+            const userImage = new Image();
+            userImage.crossOrigin = 'anonymous',
+                userImage.src = imageUrl,
+                await new Promise((resolve) => (userImage.onload = resolve));
+
+            ctx?.drawImage(
+                userImage,
+                actualX,
+                actualY,
+                renderedDimensions.width,
+                renderedDimensions.height
+            )
+
+            const base64 = canvas.toDataURL();
+            const base64Data = base64.split(',')[1];
+
+
+
+            const blob = base64toBlob(base64Data, 'image/png');
+            const file = new File([blob], 'fileName.png', { type: 'image/png' })
+
+        } catch (error) {
+
+        }
+
+        function base64toBlob(base64: string, imageType: string) {
+            const byteCharacters = atob(base64);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            return new Blob([byteArray], { type: imageType })
+        }
+    }
+
     return (
         <div className="relative mt-20 grid gird-cols-1 lg:grid-cols-3 mb-20 pb-20">
-            <div className="relative h-[37.5rem] overflow-hidden col-span-2 w-full max-w-4xl flex items-center justify-center
+            <div ref={containerRef} className="relative h-[37.5rem] overflow-hidden col-span-2 w-full max-w-4xl flex items-center justify-center
                 rounded-lg border-2 border-dashed border-gray-300 p-12 text-center focus:outline-none focus:ring-2 focus:ring-primary
                 focus: ring-offset-2
             ">
                 <div className="relative w-60 bg-opacity-50 pointer-events-none aspect-[896/1831]">
-                    <AspectRatio ratio={896 / 1831} className="pointer-events-none relative z-50 aspect-[896/1831] w-full">
-                        <Image fill src={"/phone-template.png"} alt="phone-img" className="pointer-events-none z-50 select-none" />
+                    <AspectRatio ref={phoneCaseRef} ratio={896 / 1831} className="pointer-events-none relative z-50 aspect-[896/1831] w-full">
+                        <NextImage fill src={"/phone-template.png"} alt="phone-img" className="pointer-events-none z-50 select-none" />
                     </AspectRatio>
                     <div className="absolute z-40 inset-0 left-[3px] top-px right-[3px] bottom-px rounded-[32px] shadow-[0_0_0_99999px_rgba(229,231,235,0.6)]" />
                     <div className={cn('absolute inset-0 left-[3px] top-px right-[3px] bottom-px rounded-[32px]', `bg-${options.color.tw}`)} />
                 </div>
 
                 <Rnd default={{
-                    x: 150,
-                    y: 205,
+                    x: 310,
+                    y: 250,
                     width: imageDimensions.width / 4,
                     height: imageDimensions.height / 4,
                 }}
+
+                    onResizeStop={(_, __, ref, ___, { x, y }) => {
+                        setRenderedDimensions({
+                            height: parseInt(ref.style.height.slice(0, -2)),
+                            width: parseInt(ref.style.width.slice(0, -2))
+                        })
+                        setRenderedPosition({ x, y });
+                    }}
+
+                    onDragStop={(_, data) => {
+                        const { x, y } = data;
+                        setRenderedPosition({ x, y });
+                    }}
+
                     className="absolute z-20 border-[3px] border-primary"
                     lockAspectRatio
                     resizeHandleComponent={{
@@ -65,7 +145,7 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
                     }}
                 >
                     <div className="relative w-full h-full">
-                        <Image src={imageUrl} alt="image uploaded by you" className="pointer-events-none" fill />
+                        <NextImage src={imageUrl} alt="image uploaded by you" className="pointer-events-none" fill />
                     </div>
                 </Rnd>
 
@@ -202,9 +282,9 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
                             <p className="font-medium whitespace-nowrap">
                                 {formatPrice(BASE_PRICE + options.finish.price + options.material.price)}
                             </p>
-                            <Button size={"sm"} className="w-full">
+                            <Button size={"sm"} className="w-full" onClick={() => saveConfiguration()}>
                                 Continue
-                                <ArrowRight className="h-4 w-4 ml-1.5 inline"/>
+                                <ArrowRight className="h-4 w-4 ml-1.5 inline" />
                             </Button>
                         </div>
                     </div>
