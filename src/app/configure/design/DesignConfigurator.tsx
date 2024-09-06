@@ -14,6 +14,11 @@ import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuConten
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check, ChevronsUpDown } from "lucide-react";
 import { BASE_PRICE } from "@/config/products";
+import { useUploadThing } from "@/lib/uploadthing";
+import { useToast } from "@/components/ui/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { saveConfig as _saveConfig, SaveConfigArgs } from "./actions";
+import { useRouter } from "next/navigation";
 
 interface DesignConfiguratorProps {
     configId: string,
@@ -22,6 +27,26 @@ interface DesignConfiguratorProps {
 }
 
 const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfiguratorProps) => {
+    const {toast} = useToast();
+    const router = useRouter();
+
+    const {mutate:saveConfig} = useMutation({
+        mutationKey: ['save-config'],
+        mutationFn: async(args: SaveConfigArgs) => {
+            await Promise.all([saveConfiguration(), _saveConfig(args)])
+        },
+        onError: () => {
+            toast({
+                title: "Something went wrong",
+                description: "There was an error on our end, Please try again later",
+                variant: "destructive"
+            })
+        },
+        onSuccess: () => {
+            router.push(`/configure/preview?id=${configId}`);
+        }
+    })
+
     const [options, setOptions] = useState<{
         color: (typeof COLORS)[number]
         model: (typeof MODELS.options)[number]
@@ -46,6 +71,8 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
 
     const phoneCaseRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    const {startUpload} = useUploadThing('imageUploader')
 
     async function saveConfiguration() {
         try {
@@ -85,8 +112,14 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
             const blob = base64toBlob(base64Data, 'image/png');
             const file = new File([blob], 'fileName.png', { type: 'image/png' })
 
-        } catch (error) {
+            await startUpload([file],{configId});
 
+        } catch (error) {
+            toast({
+                title: 'Something went wrong',
+                description: 'There was a problem saving your config, please try again.',
+                variant: 'destructive'
+            })
         }
 
         function base64toBlob(base64: string, imageType: string) {
@@ -282,7 +315,13 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
                             <p className="font-medium whitespace-nowrap">
                                 {formatPrice(BASE_PRICE + options.finish.price + options.material.price)}
                             </p>
-                            <Button size={"sm"} className="w-full" onClick={() => saveConfiguration()}>
+                            <Button size={"sm"} className="w-full" onClick={() => saveConfig({
+                                configId,
+                                color: options.color.value,
+                                finish: options.finish.value,
+                                material: options.material.value,
+                                model: options.model.value
+                            })}>
                                 Continue
                                 <ArrowRight className="h-4 w-4 ml-1.5 inline" />
                             </Button>
