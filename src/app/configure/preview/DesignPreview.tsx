@@ -13,12 +13,16 @@ import Confetti from 'react-dom-confetti'
 import { createCheckoutSession } from './actions';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/components/ui/use-toast';
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import LoginModal from '@/components/LoginModal';
 
 const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
     const router = useRouter();
     const [showConfetti, setShowConfetti] = useState(false);
+    const [isLoginModalOpen, setIsLoginModal] = useState(false);
+    const { user } = useKindeBrowserClient();
 
-    const { color, model, finish, material } = configuration;
+    const { color, model, finish, material, id } = configuration;
     const tw = COLORS.find((colorModels) => colorModels.value === color)?.tw
 
     const { label: modelLabel } = MODELS.options.find(({ value }) => value === model)!
@@ -32,15 +36,15 @@ const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
         totalPrice += PRODUCT_PRICES.finish.textured;
     }
 
-    const {mutate: createPaymentSession} = useMutation({
+    const { mutate: createPaymentSession } = useMutation({
         mutationKey: ['get-checkout-session'],
         mutationFn: createCheckoutSession,
-        onSuccess: ({url}) => {
-           if(url){
-            router.push(url)
-           }else{
-            throw new Error('Unabel to retrieve payment url')
-           }
+        onSuccess: ({ url }) => {
+            if (url) {
+                router.push(url)
+            } else {
+                throw new Error('Unabel to retrieve payment url')
+            }
         },
         onError: () => {
             toast({
@@ -50,6 +54,15 @@ const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
             })
         }
     })
+
+    const handleCheckout = () => {
+        if (user) {
+            createPaymentSession({ configId: id })
+        } else {
+            localStorage.setItem("Configuration Id", id)
+            setIsLoginModal(true)
+        }
+    }
 
     useEffect(() => (
         setShowConfetti(true)
@@ -61,6 +74,8 @@ const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
                 inset-0 overflow-hidden flex justify-center">
                 <Confetti active={showConfetti} config={{ elementCount: 500, spread: 450 }} />
             </div>
+
+            <LoginModal isOpen={isLoginModalOpen} setIsOpen={setIsLoginModal} />
 
             <div className='mt-20 grid grid-cols-1 text-sm sm:grid-cols-12 sm:grid-rows-1 sm:gap-x-6 md:gap-x-8 lg:gap-x-12'>
                 <div className='sm:col-span-4 md:col-span-3 md:row-span-2 md:row-end-2'>
@@ -142,7 +157,7 @@ const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
                         </div>
 
                         <div className='mt-8 flex justify-end pb-12'>
-                            <Button onClick={() => createPaymentSession({configId:configuration.id})} className="px-4 sm:px-6 lg:px-8">
+                            <Button onClick={() => handleCheckout()} className="px-4 sm:px-6 lg:px-8">
                                 Check out <ArrowRight className='h-4 w-4 ml-1.5' />
                             </Button>
                         </div>
