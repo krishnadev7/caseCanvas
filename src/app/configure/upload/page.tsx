@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import Dropzone, { FileRejection } from "react-dropzone";
 
-const page = () => {
+const Page = () => {
     const router = useRouter();
     const { toast } = useToast();
     const [isDragOver, setIsDragOver] = useState(false);
@@ -107,4 +107,4 @@ const page = () => {
     )
 }
 
-export default page;
+export default Page;

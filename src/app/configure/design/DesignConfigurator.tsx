@@ -26,6 +26,11 @@ interface DesignConfiguratorProps {
     imageDimensions: { width: number, height: number }
 }
 
+type RadioRenderPropArg = {
+    active: boolean;
+    checked: boolean;
+  };
+
 const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfiguratorProps) => {
     const {toast} = useToast();
     const router = useRouter();
@@ -211,8 +216,8 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
                                             <Radio
                                                 key={color.label}
                                                 value={color}
-                                                className={({ active, checked }) => cn('relative -m-0.5 flex cursor-pointer items-center justify-center rounded-full p-0.5 active:ring-0 focus:ring-0 active:outline-none focus:outline-none border-2 border-transparent', {
-                                                    [`border-${color.tw}`]: active || checked
+                                                className={({ checked }) => cn('relative -m-0.5 flex cursor-pointer items-center justify-center rounded-full p-0.5 active:ring-0 focus:ring-0 active:outline-none focus:outline-none border-2 border-transparent', {
+                                                    [`border-${color.tw}`]: checked
                                                 })}
                                             >
                                                 <span className={cn(`bg-${color.tw}`, 'h-8 w-8 rounded-full border border-black border-opacity-10')} />
@@ -262,9 +267,9 @@ const DesignConfigurator = ({ configId, imageUrl, imageDimensions }: DesignConfi
                                         <div className="mt-3 space-y-4">
                                             {selectableOptions.map((option) => (
                                                 <Radio key={option.value} value={option}
-                                                    className={({ active, checked }) =>
+                                                    className={({checked }) =>
                                                         cn("relative block cursor-pointer rounded-lg bg-white px-6 py-4 shadow-sm border-2 border-zinc-200 focus:outline-none ring-0 focus:ring-0 outline-none sm:flex sm:justify-between", {
-                                                            'border-primary': active || checked
+                                                            'border-primary': checked
                                                         })
                                                     }
                                                 >
