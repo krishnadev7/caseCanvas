@@ -39,34 +39,70 @@ export async function POST(req: Request) {
       const billingAddress = session.customer_details!.address
       const shippingAddress = session.shipping_details!.address
 
-        await db.order.update({
+      //   await db.order.update({
+      //   where: {
+      //     id: orderId,
+      //   },
+      //   data: {
+      //     isPaid: true,
+      //     shippingAddress: {
+      //       create: {
+      //         name: session.customer_details!.name!,
+      //         city: shippingAddress!.city!,
+      //         country: shippingAddress!.country!,
+      //         postalCode: shippingAddress!.postal_code!,
+      //         street: shippingAddress!.line1!,
+      //         state: shippingAddress!.state!,
+      //         phoneNumber: session.customer_details?.phone!
+      //       },
+      //     },
+      //     billingAddress: {
+      //       create: {
+      //         name: session.customer_details!.name!,
+      //         city: billingAddress!.city!,
+      //         country: billingAddress!.country!,
+      //         postalCode: billingAddress!.postal_code!,
+      //         street: billingAddress!.line1!,
+      //         state: billingAddress!.state!,
+      //         phoneNumber: session.customer_details?.phone!
+      //       },
+      //     },
+      //   },
+      // })
+
+
+      await db.order.update({
         where: {
           id: orderId,
         },
         data: {
           isPaid: true,
-          shippingAddress: {
-            create: {
-              name: session.customer_details!.name!,
-              city: shippingAddress!.city!,
-              country: shippingAddress!.country!,
-              postalCode: shippingAddress!.postal_code!,
-              street: shippingAddress!.line1!,
-              state: shippingAddress!.state!,
-              phoneNumber: session.customer_details?.phone!
-            },
-          },
-          billingAddress: {
-            create: {
-              name: session.customer_details!.name!,
-              city: billingAddress!.city!,
-              country: billingAddress!.country!,
-              postalCode: billingAddress!.postal_code!,
-              street: billingAddress!.line1!,
-              state: billingAddress!.state!,
-              phoneNumber: session.customer_details?.phone!
-            },
-          },
+          shippingAddress: shippingAddress
+            ? {
+                create: {
+                  name: session.customer_details?.name || '',
+                  city: shippingAddress.city || '',
+                  country: shippingAddress.country || '',
+                  postalCode: shippingAddress.postal_code || '',
+                  street: shippingAddress.line1 || '',
+                  state: shippingAddress.state || '',
+                  phoneNumber: session.customer_details?.phone || ''
+                },
+              }
+            : undefined,
+          billingAddress: billingAddress
+            ? {
+                create: {
+                  name: session.customer_details?.name || '',
+                  city: billingAddress.city || '',
+                  country: billingAddress.country || '',
+                  postalCode: billingAddress.postal_code || '',
+                  street: billingAddress.line1 || '',
+                  state: billingAddress.state || '',
+                  phoneNumber: session.customer_details?.phone || ''
+                },
+              }
+            : undefined,
         },
       })
     }
