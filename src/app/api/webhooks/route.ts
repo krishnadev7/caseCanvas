@@ -19,7 +19,7 @@ export async function POST(req: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
 
-    if (event.type == "checkout.session.completed") {
+    if (event.type === "checkout.session.completed") {
       if (!event.data.object.customer_details?.email) {
         throw new Error("Missing user email");
       }
@@ -36,8 +36,12 @@ export async function POST(req: Request) {
       throw new Error("Invalid request metadata");
     }
 
-    const billingAddress = session.customer_details!.address;
-    const shippingAddress = session.shipping_details!.address;
+    const billingAddress = session.customer_details?.address;
+    const shippingAddress = session.shipping_details?.address;
+
+    if (!billingAddress || !shippingAddress) {
+      throw new Error("Missing address information");
+    }
 
     await db.order.update({
       where: { id: orderId },
@@ -45,31 +49,31 @@ export async function POST(req: Request) {
         isPaid: true,
         shippingAddress: {
           create: {
-            name: session.customer_details!.name!,
-            city: shippingAddress!.city!,
-            country: shippingAddress!.country!,
-            postalCode: shippingAddress!.postal_code!,
-            street: shippingAddress!.line1!,
-            state: shippingAddress!.state!,
-            phoneNumber: session.customer_details!.phone!,
+            name: session.customer_details?.name || '',
+            city: shippingAddress?.city || '',
+            country: shippingAddress?.country || '',
+            postalCode: shippingAddress?.postal_code || '',
+            street: shippingAddress?.line1 || '',
+            state: shippingAddress?.state || '',
+            phoneNumber: session.customer_details?.phone || '',
           },
         },
         billingAddress: {
           create: {
-            name: session.customer_details!.name!,
-            city: billingAddress!.city!,
-            country: billingAddress!.country!,
-            postalCode: billingAddress!.postal_code!,
-            street: billingAddress!.line1!,
-            state: billingAddress!.state!,
-            phoneNumber: session.customer_details!.phone!,
+            name: session.customer_details?.name || '',
+            city: billingAddress?.city || '',
+            country: billingAddress?.country || '',
+            postalCode: billingAddress?.postal_code || '',
+            street: billingAddress?.line1 || '',
+            state: billingAddress?.state || '',
+            phoneNumber: session.customer_details?.phone || '',
           },
         },
       },
     });
     return NextResponse.json({ result: event, ok: true });
   } catch (error) {
-    console.log(error);
+    console.log("webhook error",error);
     return NextResponse.json(
       {
         message: "Something went wrong",
