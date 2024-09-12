@@ -36,8 +36,8 @@ export async function POST(req: Request) {
         throw new Error('Invalid request metadata')
       }
 
-      const billingAddress = session.customer_details!.address
-      const shippingAddress = session.shipping_details!.address
+      // const billingAddress = session.customer_details!.address
+      // const shippingAddress = session.shipping_details!.address
 
       //   await db.order.update({
       //   where: {
@@ -71,39 +71,46 @@ export async function POST(req: Request) {
       // })
 
 
+      const customerDetails = session.customer_details
+      const shippingDetails = session.shipping_details
+
+      const updateData: any = {
+        isPaid: true,
+      }
+
+      if (customerDetails) {
+        updateData.billingAddress = {
+          create: {
+            name: customerDetails.name || '',
+            city: customerDetails.address?.city || '',
+            country: customerDetails.address?.country || '',
+            postalCode: customerDetails.address?.postal_code || '',
+            street: customerDetails.address?.line1 || '',
+            state: customerDetails.address?.state || '',
+            phoneNumber: customerDetails.phone || '',
+          },
+        }
+      }
+
+      if (shippingDetails) {
+        updateData.shippingAddress = {
+          create: {
+            name: shippingDetails.name || '',
+            city: shippingDetails.address?.city || '',
+            country: shippingDetails.address?.country || '',
+            postalCode: shippingDetails.address?.postal_code || '',
+            street: shippingDetails.address?.line1 || '',
+            state: shippingDetails.address?.state || '',
+            phoneNumber: customerDetails?.phone || '',
+          },
+        }
+      }
+
       await db.order.update({
         where: {
           id: orderId,
         },
-        data: {
-          isPaid: true,
-          shippingAddress: shippingAddress
-            ? {
-                create: {
-                  name: session.customer_details?.name || '',
-                  city: shippingAddress.city || '',
-                  country: shippingAddress.country || '',
-                  postalCode: shippingAddress.postal_code || '',
-                  street: shippingAddress.line1 || '',
-                  state: shippingAddress.state || '',
-                  phoneNumber: session.customer_details?.phone || ''
-                },
-              }
-            : undefined,
-          billingAddress: billingAddress
-            ? {
-                create: {
-                  name: session.customer_details?.name || '',
-                  city: billingAddress.city || '',
-                  country: billingAddress.country || '',
-                  postalCode: billingAddress.postal_code || '',
-                  street: billingAddress.line1 || '',
-                  state: billingAddress.state || '',
-                  phoneNumber: session.customer_details?.phone || ''
-                },
-              }
-            : undefined,
-        },
+        data: updateData,
       })
     }
 
