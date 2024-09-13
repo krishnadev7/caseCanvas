@@ -2,7 +2,7 @@ import Link from "next/link";
 import MaxWidthWrapper from "./MaxWidthWrapper";
 import { Button, buttonVariants } from "./ui/button";
 import { ArrowRight } from "lucide-react";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { getKindeServerSession, LoginLink, LogoutLink, RegisterLink } from "@kinde-oss/kinde-auth-nextjs/server";
 
 const Navbar = async () => {
     const { getUser } = getKindeServerSession();
@@ -20,11 +20,11 @@ const Navbar = async () => {
                     <div className="h-full flex items-center space-x-4">
                         {user ? (
                             <>
-                                <Link href={'/api/auth/logout'} className={buttonVariants({
+                                <LogoutLink href={'/api/auth/logout'} className={buttonVariants({
                                     size: 'sm', variant: 'ghost'
                                 })}>
                                     <span className="hover:text-indigo-600">Sign out</span>
-                                </Link>
+                                </LogoutLink>
                                 {isAdmin && (
                                     <Link href={'/dashboard'} className={buttonVariants({
                                         size: 'sm', variant: 'ghost'
@@ -41,16 +41,16 @@ const Navbar = async () => {
                             </>
                         ) : (
                             <>
-                                <Link href={'/api/auth/register'} className={buttonVariants({
+                                <RegisterLink href={'/api/auth/register'} className={buttonVariants({
                                     size: 'sm', variant: 'ghost'
                                 })}>
                                     <span className="hover:text-indigo-600">Sign Up</span>
-                                </Link>
+                                </RegisterLink>
 
-                                <Link href={'/api/auth/login'} className={buttonVariants({
+                                <LoginLink href={'/api/auth/login'} className={buttonVariants({
                                     size: 'sm', variant: 'ghost'
                                 })}>
-                                    <span className="hover:text-indigo-600">Login</span>                            </Link>
+                                    <span className="hover:text-indigo-600">Login</span>                            </LoginLink>
 
                                 <div className="h-8 w-px bg-zinc-200 hidden sm:block" />
                                 <Link href={'/configure/upload'} className={buttonVariants({
