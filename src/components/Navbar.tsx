@@ -26,10 +26,10 @@ const Navbar = async () => {
                                     <span className="hover:text-indigo-600">Sign out</span>
                                 </Link>
                                 {isAdmin && (
-                                    <Link href={'/api/auth/logout'} className={buttonVariants({
+                                    <Link href={'/dashboard'} className={buttonVariants({
                                         size: 'sm', variant: 'ghost'
                                     })}>
-                                        <span className="hover:text-indigo-600">Dashboard 👨🏻‍💻</span>
+                                        <span className="hover:text-indigo-600">Dashboard</span>
                                     </Link>
                                 )}
                                 <Link href={'/configure/upload'} className={buttonVariants({
