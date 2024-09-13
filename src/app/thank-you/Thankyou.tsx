@@ -87,7 +87,7 @@ const Thankyou = () => {
                                     <address className="not-italic">
                                         <span className="block">{billingAddress?.name}</span>
                                         <span className="block">{billingAddress?.street}</span>
-                                        <span className="block">{billingAddress?.postalCode} {billingAddress?.city}</span>
+                                        <span className="block">{billingAddress?.postalCode} {billingAddress?.city} {shippingAddress?.phoneNumber}</span>
                                     </address>
                                 </div>
                             </div>
@@ -97,7 +97,7 @@ const Thankyou = () => {
                                     <address className="not-italic">
                                         <span className="block">{billingAddress?.name}</span>
                                         <span className="block">{billingAddress?.street}</span>
-                                        <span className="block">{billingAddress?.postalCode} {billingAddress?.city}</span>
+                                        <span className="block">{billingAddress?.postalCode} {billingAddress?.city} {billingAddress?.phoneNumber}</span>
                                     </address>
                                 </div>
                             </div>

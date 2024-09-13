@@ -36,14 +36,14 @@ const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
         totalPrice += PRODUCT_PRICES.finish.textured;
     }
 
-    const { mutate: createPaymentSession } = useMutation({
+    const { mutate: createPaymentSession,isPending } = useMutation({
         mutationKey: ['get-checkout-session'],
         mutationFn: createCheckoutSession,
         onSuccess: ({ url }) => {
             if (url) {
                 router.push(url)
             } else {
-                throw new Error('Unabel to retrieve payment url')
+                throw new Error('Unable to retrieve payment url')
             }
         },
         onError: () => {
@@ -157,7 +157,7 @@ const DesignPreview = ({ configuration }: { configuration: Configuration }) => {
                         </div>
 
                         <div className='mt-8 flex justify-end pb-12'>
-                            <Button onClick={() => handleCheckout()} className="px-4 sm:px-6 lg:px-8">
+                            <Button isLoading={isPending} disabled={isPending} loadingText='Processing' onClick={() => handleCheckout()} className="px-4 sm:px-6 lg:px-8">
                                 Check out <ArrowRight className='h-4 w-4 ml-1.5' />
                             </Button>
                         </div>
